@@ -1,0 +1,17 @@
+{
+  "name": "deungbon2csv",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "csv-writer": "^1.6.0",
+    "pdf2json": "^3.0.1",
+    "sscanf": "^0.8.0",
+    "wildcard-match": "^5.1.2"
+  }
+}
