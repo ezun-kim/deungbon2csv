@@ -6,11 +6,16 @@ const {
 } = require('selenium-webdriver');
 var ks = require('node-key-sender');
 
-// var chrome = require('selenium-webdriver/chrome');
 
-let driver = new Builder().forBrowser('chrome')
-// .withCapabilities({})
-.build();
+// options.add_experimental_option('excludeSwitches', ['enable-logging'])
+// driver = webdriver.Chrome(options=options,
+
+
+let driver = new Builder()
+.withCapabilities({acceptInsecureCerts: true})
+.forBrowser('chrome')
+.build()
+
 
 const closePopups = async () => {
   const mainWindowHandle = await driver.getWindowHandle()
@@ -34,13 +39,13 @@ const closePopups = async () => {
 // }
 const search = {
   type : 'search04Tab',
-  from : '1143-2005-001410',
-  to : '1143-2005-001763'
+  from : '1102-1996-030029',
+  to : '1102-1996-030057',
 }
 
 const user = {
-  id : '',
-  pw : ''
+  id : 'korg1975',
+  pw : 'iro12131!'
 }
 
 
@@ -73,19 +78,29 @@ const start = async () => {
 
   await driver.get('https://www.iros.go.kr');
 
+  // const overDiv = driver.findElement(By.id('tk_overdiv'))
+  // if (overDiv != null) {
+  //   driver.executeScript("arguments[0].style.visibility='hidden'", overDiv)
+  // }
+
   await closePopups()
 
+  // await driver.manage().setTimeouts( { implicit: 5000 } );
   // 1. login
-  let idInput = driver.findElement(By.name('user_id'));
-  await idInput.click()
-  await idInput.sendKeys()
+  let idInput = By.id('id_user_id')
+  await driver.wait(until.elementLocated(idInput))
+  await driver.findElement(idInput).clear()
+  await driver.findElement(idInput).click()
+  await driver.findElement(idInput).sendKeys()
   await ks.sendText(user.id)
 
 
-  let passwordInput = driver.findElement(By.name('password'));
-  await passwordInput.click()
-  await passwordInput.sendKeys(user.pw)
-  await ks.sendKeys(Array.from(user.pw))
+  let passwordInput = By.id('password')
+  await driver.wait(until.elementLocated(passwordInput))
+  await driver.findElement(passwordInput).clear()
+  await driver.findElement(passwordInput).click()
+  await driver.findElement(passwordInput).sendKeys()
+  await ks.sendText(user.pw)
 
   // let loginButton = By.xpath('/html/body/div[1]/div[4]/div[1]/div[1]/div[2]/form/div[1]/ul/li[4]/a')
   // await driver.wait(until.elementLocated(loginButton))
