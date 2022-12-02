@@ -321,6 +321,7 @@ const parse = (text) => {
         "미국인 ",
         "일본국인 ",
         "캐나다인 ",
+        "캐나다국인 ",
     ])
 
     text = extractRange(text,
