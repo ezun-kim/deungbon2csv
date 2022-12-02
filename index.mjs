@@ -1,6 +1,5 @@
 import PDFParser from "pdf2json"
 import dataParser from './dataParser.js'
-import renamePDFfiles from './pdfRenamer.js'
 import { pathEqual } from 'path-equal'
 
 import { createObjectCsvWriter } from 'csv-writer'
@@ -37,13 +36,16 @@ const readPDFfiles = async (dir, files, options) => {
 }
 
 const printData = (data) => {
-    data.forEach(ele => console.log(
-        ele.address + "\t" +
-        ele.error + "\t" +
-        ele.owners[0].name + "\t" +
-        ele.owners[0].birth + "\t" +
-        ele.owners[0].share + "\t" +
-        ele.owners[0].address))
+    data.forEach(ele => 
+        ele.owners.forEach(owner=>
+            console.log(
+                ele.roomNumber + "\t" +
+                ele.error + "\t" +
+                owner.name + "\t" +
+                owner.birth + "\t" +
+                owner.share + "\t" +
+                owner.address))    
+    )
 }
 
 
@@ -52,7 +54,7 @@ const exportDataToCSV = (data) => {
     const timestamp = date.getTime();
 
     const csvWriter = createObjectCsvWriter({
-        path: `data-${timestamp}.csv`,
+        path: `out/data-${timestamp}.csv`,
         header: [
             { id: 'error', title: '오류' },
             { id: 'address', title: '주소' },
@@ -68,15 +70,19 @@ const exportDataToCSV = (data) => {
     let records = []
 
     data.sort((a, b) => a.roomNumber - b.roomNumber)
-    data.forEach(ele => records.push({
-        address: ele.address,
-        roomNumber: ele.roomNumber,
-        error: ele.error,
-        name: ele.owners[0].name,
-        birth: ele.owners[0].birth,
-        share: ele.owners[0].share,
-        ownerAddress: ele.owners[0].address,
-    }))
+    data.forEach(ele => 
+        ele.owners.forEach(owner=> {
+            records.push({
+                address: ele.address,
+                roomNumber: ele.roomNumber,
+                error: ele.error,
+                name: owner.name,
+                birth: owner.birth,
+                share: owner.share,
+                ownerAddress: owner.address,
+            })
+        })
+    )
 
     csvWriter.writeRecords(records)       // returns a promise
         .then(() => {

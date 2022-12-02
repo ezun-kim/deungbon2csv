@@ -1,5 +1,4 @@
 const sscanf = require("sscanf")
-// const wcmatch = require('wildcard-match')
 
 const ownerIdentifier = '소유자'
 const shareIdentifier = ' 지분 '
@@ -163,7 +162,7 @@ const getOwnerLatestAddress = (list) => {
         startPos = address.indexOf('변경 제')
         endPos = address.indexOf('호 주소')
 
-        console.log(address, startPos, endPos)
+        // console.log(address, startPos, endPos)
 
         if (startPos > 0 && endPos > 0 && startPos < endPos) {
             address = address.substring(0, startPos) + address.substring(endPos + '호 주소'.length, address.length)
@@ -177,7 +176,7 @@ const getOwnerLatestAddress = (list) => {
 const getOwnerAddress = (text) => {
     let startPos = -1
     let identifiers = [
-        '매매 ', '전거', '증여', '상속', '-*******'
+        '매매 ', '매매1', '전거', '증여', '상속', '-*******'
     ]
     let identifierIdx = -1
 
@@ -274,6 +273,18 @@ const getOwnersInfo = (list) => {
     })
     owners.sort((a, b) => b.share - a.share)
 
+    // delete duplicates
+    owners = owners.reverse().filter((value, index, self) =>
+        index === self.findIndex((t) => (
+            t.name === value.name
+        ))
+    )
+
+    let shareTotal = 0
+    owners.forEach(owner => shareTotal += owner.share)
+    if (shareTotal != 1) {
+        error = true
+    }
     return owners
 }
 
@@ -286,6 +297,8 @@ const processOwnerData = (list) => {
         }
     }
 
+    // console.log(list)
+
     if (list[ownerIndex].indexOf(ownerIdentifier) > 0) {
         return getOwnerInfo(list, ownerIdentifier)
     }
@@ -294,7 +307,8 @@ const processOwnerData = (list) => {
     }
     else {
         console.error("No owner found!")
-        console.log(list)
+        error = true
+        // console.log(list)
         return []
     }
 }
@@ -328,6 +342,8 @@ const parse = (text) => {
         "【  갑      구  】",
         "【  을      구  】",
     )
+
+    // console.log(text)
 
     const allList = listArrangeByIndexNumber(text)
     const currentOwnerList = getCurrentOwnerList(allList)
