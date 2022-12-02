@@ -1,86 +1,104 @@
-import PDFParser from "pdf2json";
-import dataParser from './dataParser.js';
+import PDFParser from "pdf2json"
+import dataParser from './dataParser.js'
+import renamePDFfiles from './pdfRenamer.js'
+import { pathEqual } from 'path-equal'
+
 import { createObjectCsvWriter } from 'csv-writer'
 import fs from 'fs'
+import path from 'path'
 
-const dataPath = "data/"
-var files = [
-    // "/Users/ezun/Desktop/work/Deungbon2csv/data/303.pdf",
-]
+const readPDFfiles = async (dir, files, options) => {
+    return new Promise((resolve, reject) => {
+        var loadProcess = 0
+        var data = []
 
-if (files.length < 1) {
-    await fs.readdirSync(dataPath).forEach(file => file.indexOf(".pdf") > 0 && files.push(file));
+        files.forEach((file) => {
+            const pdfParser = new PDFParser(this, 1);
+            const destPath = dir + file
+            pdfParser.loadPDF(destPath)
+            pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError));
+            pdfParser.on("pdfParser_dataReady", pdfData => {
+                const parsed = dataParser.parse(pdfParser.getRawTextContent())
+                data.push(parsed)
+                
+                // rename the file
+                let newFilePath = path.join(dir, parsed.address + '.pdf')
+                if (options.renamePDFfileToAddress && !pathEqual(newFilePath, destPath)) {
+                    fs.renameSync(destPath, newFilePath)
+                    console.log(destPath + " ==> " + newFilePath)
+                }
+
+                if (++loadProcess == files.length) {
+                    resolve(data)
+                }
+            })
+        })
+    })
 }
 
-var loadProcess = 0
-var texts = []
+const printData = (data) => {
+    data.forEach(ele => console.log(
+        ele.address + "\t" +
+        ele.error + "\t" +
+        ele.owners[0].name + "\t" +
+        ele.owners[0].birth + "\t" +
+        ele.owners[0].share + "\t" +
+        ele.owners[0].address))
+}
 
-files.forEach((file) => {
-    const pdfParser = new PDFParser(this, 1);
-    const path = process.cwd() + '/' + dataPath + file
-    pdfParser.loadPDF(path)
-    // console.log(path)
 
-    pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError));
-    pdfParser.on("pdfParser_dataReady", pdfData => {
-
-        // texts.push(pdfParser.getRawTextContent())
-        // console.log()
-
-        const data = dataParser.parse(pdfParser.getRawTextContent())
-        texts.push(data)
-        console.log(
-            data.roomNumber + "\t" + 
-            data.error + "\t" + 
-            data.owners[0].name + "\t" +
-            data.owners[0].birth + "\t" +
-            data.owners[0].share + "\t" +
-            data.owners[0].address)
-        if (++loadProcess == files.length) {
-            loadDone()
-        }
-    })
-})
-  
-
-const loadDone = () => {
+const exportDataToCSV = (data) => {
     const date = new Date();
     const timestamp = date.getTime();
 
     const csvWriter = createObjectCsvWriter({
         path: `data-${timestamp}.csv`,
         header: [
-            {id: 'error', title: '오류'},
-            {id: 'address', title: '주소'},
-            {id: 'roomNumber', title: '호수'},
-            {id: 'name', title: '이름'},
-            {id: 'birth', title: '생일'},
-            {id: 'share', title: '지분'},
-            {id: 'ownerAddress', title: '소유자 주소'},
+            { id: 'error', title: '오류' },
+            { id: 'address', title: '주소' },
+            { id: 'roomNumber', title: '호수' },
+            { id: 'name', title: '이름' },
+            { id: 'birth', title: '생일' },
+            { id: 'share', title: '지분' },
+            { id: 'ownerAddress', title: '소유자 주소' },
         ]
     });
 
 
     let records = []
 
-    texts.sort((a,b) => a.roomNumber - b.roomNumber)
-    texts.forEach(ele => records.push({
-        address : ele.address,
-        roomNumber : ele.roomNumber,
-        error : ele.error,
-        name : ele.owners[0].name,
-        birth : ele.owners[0].birth,
-        share : ele.owners[0].share,
-        ownerAddress : ele.owners[0].address,
+    data.sort((a, b) => a.roomNumber - b.roomNumber)
+    data.forEach(ele => records.push({
+        address: ele.address,
+        roomNumber: ele.roomNumber,
+        error: ele.error,
+        name: ele.owners[0].name,
+        birth: ele.owners[0].birth,
+        share: ele.owners[0].share,
+        ownerAddress: ele.owners[0].address,
     }))
 
-     
     csvWriter.writeRecords(records)       // returns a promise
         .then(() => {
             console.log('...Done');
         });
-        
-    // texts.forEach((text) => console.log(dataParser.parse(text)))
-    // texts.sort((a,b) => a.roomNumber - b.roomNumber)
-    // console.table(texts)
 }
+
+
+// 0. Define files to be readed.
+const basePath = process.cwd() + "/data/"
+const files = [
+    // "303.pdf",
+]
+
+if (files.length < 1) {
+    fs.readdirSync(basePath).forEach(file => {
+        file.indexOf(".pdf") > 0 && files.push(file)
+    });
+}
+
+readPDFfiles(basePath, files, {renamePDFfileToAddress: true})
+    .then(data => {
+        exportDataToCSV(data)
+        printData(data)
+    })

@@ -107,6 +107,33 @@ const getCurrentOwnerList = (list) => {
     return filtered
 }
 
+const addressFiltering = address => {
+
+    const index_부동산등기법시행규칙부칙 = address.indexOf('부동산등기법시행규칙부칙')
+    if (index_부동산등기법시행규칙부칙 > 0) {
+        address = address.substring(0, index_부동산등기법시행규칙부칙)
+    }
+
+    const 임의경매로 = '임의경매로'
+    const 인한낙찰  = '인한 낙찰'
+    
+    if (address.indexOf(임의경매로) < address.indexOf(인한낙찰)) {
+        address = address.substring(address.indexOf(임의경매로) + 임의경매로.length, address.length)
+        address = address.replaceAll(인한낙찰, '')
+    }
+
+    const 매매목록  = '매매목록'
+    if (address.indexOf(매매목록) > 0) {
+        address = address.substring(0, address.indexOf(매매목록))
+    }
+    
+    address = address.replace(/ +/g, " ")
+    address = address.trim()
+
+
+    return address
+}
+
 const getOwnerLatestAddress = (list) => {
     let address = ""
     
@@ -141,7 +168,7 @@ const getOwnerLatestAddress = (list) => {
 const getOwnerAddress = (text) => {
     let startPos = -1
     let identifiers = [
-        '매매', '전거', '증여', '상속', '-*******'
+        '매매 ', '전거', '증여', '상속', '-*******'
     ]
     let identifierIdx = -1
 
@@ -201,6 +228,7 @@ const getOwnerInfo = (list, identifier) => {
         address = getOwnerAddress(ownerOrigin)
         const latestAddress = getOwnerLatestAddress(list)
         address = latestAddress.length > 0 ? latestAddress : address
+        address = addressFiltering(address)
     }
 
 
