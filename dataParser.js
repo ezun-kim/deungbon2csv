@@ -136,18 +136,15 @@ const addressFiltering = address => {
 
 const getOwnerLatestAddress = (list) => {
     let address = ""
-    
-    let identifier = '전거'
-    let filtered = list.filter(ele => ele.indexOf(identifier) > 0)
+    let filtered = list.filter(ele => ele.indexOf('전거') > 0 || ele.indexOf('주소변경') > 0)
 
-    if (filtered.length < 0) {
-        identifier = '주소변경'
-        filtered = list.filter(ele => ele.indexOf(identifier) > 0)
-        console.log("!!")
-    }
-    
     if (filtered.length > 0) {
         let text = filtered[filtered.length - 1]
+
+        let identifier = '전거'
+        if (text.lastIndexOf(identifier) < 0) {
+            identifier = '주소변경'
+        }
 
         let startPos = text.lastIndexOf('변경')
         let endPos = text.lastIndexOf(identifier) + identifier.length
@@ -159,10 +156,22 @@ const getOwnerLatestAddress = (list) => {
         if (endPos == -1) endPos = address.lastIndexOf('[')
         if (endPos == -1) endPos = address.length
 
-        address = address.substring(0, endPos).replace(/\s+/g, ' ').trim()
+        address = address.substring(0, endPos)
+
+        //
+        address = address.replace(/\s+/g, ' ')
+        startPos = address.indexOf('변경 제')
+        endPos = address.indexOf('호 주소')
+
+        console.log(address, startPos, endPos)
+
+        if (startPos > 0 && endPos > 0 && startPos < endPos) {
+            address = address.substring(0, startPos) + address.substring(endPos + '호 주소'.length, address.length)
+        }
+       
     }
 
-    return address
+    return address.replace(/\s+/g, ' ').trim()
 }
 
 const getOwnerAddress = (text) => {
