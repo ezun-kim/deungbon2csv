@@ -4,11 +4,6 @@ const {
   Key,
   until
 } = require('selenium-webdriver');
-var ks = require('node-key-sender');
-
-
-// options.add_experimental_option('excludeSwitches', ['enable-logging'])
-// driver = webdriver.Chrome(options=options,
 
 
 let driver = new Builder()
@@ -44,8 +39,8 @@ const search = {
 }
 
 const user = {
-  id : 'korg1975',
-  pw : 'iro12131!'
+  id : '',
+  pw : ''
 }
 
 
@@ -87,24 +82,18 @@ const start = async () => {
 
   // await driver.manage().setTimeouts( { implicit: 5000 } );
   // 1. login
-  let idInput = By.id('id_user_id')
-  await driver.wait(until.elementLocated(idInput))
-  await driver.findElement(idInput).clear()
-  await driver.findElement(idInput).click()
-  await driver.findElement(idInput).sendKeys()
-  await ks.sendText(user.id)
+  await driver.wait(until.elementLocated(By.id('id_user_id')))
+  await driver.executeScript(`document.getElementById('id_user_id').value = '${user.id}'`)
 
+  await driver.wait(until.elementLocated(By.id('password')))
+  await driver.executeScript(`document.getElementById('password').value = '${user.pw}'`)
 
-  let passwordInput = By.id('password')
-  await driver.wait(until.elementLocated(passwordInput))
-  await driver.findElement(passwordInput).clear()
-  await driver.findElement(passwordInput).click()
-  await driver.findElement(passwordInput).sendKeys()
-  await ks.sendText(user.pw)
+  // await driver.findElement(passwordInput).sendKeys()
+  // await ks.sendText(user.pw)
 
-  // let loginButton = By.xpath('/html/body/div[1]/div[4]/div[1]/div[1]/div[2]/form/div[1]/ul/li[4]/a')
-  // await driver.wait(until.elementLocated(loginButton))
-  // await driver.findElement(loginButton).click()
+  let loginButton = By.xpath('/html/body/div[1]/div[4]/div[1]/div[1]/div[2]/form/div[1]/ul/li[4]/a')
+  await driver.wait(until.elementLocated(loginButton))
+  await driver.findElement(loginButton).click()
   
   //////////////////
 
